@@ -17,6 +17,12 @@
 
 	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
 	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	<!-- 
+		InternalResourceViewResolver : jsp연동을 위해 사용
+		VelocityViewResolover : Velocity연동을 위해 사용
+		BeanNameViewResolover : Bean에 대한 연동을 위해 사용
+		XmlViewResolover  : xml이랑 연동을 위해 사용
+	-->
 		<beans:property name="prefix" value="/WEB-INF/views/" />
 		<beans:property name="suffix" value=".jsp" />
 	</beans:bean>

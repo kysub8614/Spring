@@ -14,10 +14,62 @@
 		<result property="updateDate" column="update_Date"/>
 		<result property="mStatus" column="m_Status"/>
 	</resultMap>
+	
+	<!-- Login -->
 	<select id="selectOne" parameterType="Member" resultMap="memberResultSet">
-		SELECT *
+		<!-- 암호화 전 -->
+		<!-- SELECT *
 		FROM MEMBER
 		WHERE ID = #{id} AND PWD = #{pwd} 
-				AND M_STATUS = 'Y'
+				AND M_STATUS = 'Y' -->
+		<!-- 암호화 후 -->
+		select *
+		from member
+		where id=#{id} and m_status='Y'
 	</select>
+	
+	<!-- 회원가입 -->
+	<insert id="insertMember" parameterType="Member">
+		insert into member
+		values(
+			#{id},
+			#{pwd},
+			#{name},
+			#{email},
+			#{gender},
+			#{age},
+			#{phone},
+			#{address},
+			sysdate,
+			sysdate,
+			default
+		)
+	</insert>
+	
+	<!-- 회원정보 수정 -->
+	<update id="updateMember" parameterType="Member">
+		update member
+		set name=#{name},
+			email=#{email},
+			gender=#{gender},
+			age=#{age},
+			address=#{address}, 
+			phone=#{phone},
+			update_date=sysdate
+		where id=#{id}
+	</update>
+	
+	<!-- 비밀번호 변경 -->
+	<update id="updatePwd" parameterType="Member">
+		update member
+		set pwd=#{pwd}
+		where id=#{id} and m_status='Y'
+	</update>
+	
+	<!-- 회원 탈퇴 -->
+	<update id="deleteMember" parameterType="Member">
+		update member
+		set m_status='N'
+		where id=#{id}
+	</update>
 </mapper>
