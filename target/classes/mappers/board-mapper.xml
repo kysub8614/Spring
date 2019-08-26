@@ -1,4 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="boardMapper">
+
+	<!-- ResultMap 지정 -->
+	<resultMap type="Board" id="boardResultSet">
+		<id property="bId" column="BID"/>
+		<result property="bTitle" column="BTITLE"/>		
+		<result property="bWriter" column="BWRITER"/>		
+		<result property="bContent" column="BCONTENT"/>		
+		<result property="originalFile" column="ORIGINAL_FILENAME"/>		
+		<result property="renameFile" column="RENAME_FILENAME"/>		
+		<result property="bCount" column="BCOUNT"/>		
+		<result property="bCreateDate" column="B_CREATE_DATE"/>		
+		<result property="bModifyDate" column="B_MODIFY_DATE"/>		
+		<result property="bStatus" column="B_STATUS"/>		
+	</resultMap>
+	
+	<!-- 게시글 전체 갯수 조회 -->
+	<select id="getListCount" resultType="_int">
+		select count(*)
+		from board
+		where b_status = 'Y'
+	</select>
+	
+	<!-- 게시글 전체 조회(페이징 포함) -->
+	<select id="selectList" resultMap="boardResultSet">
+		select *
+		from board
+		where b_status = 'Y'
+		order by bid desc
+	</select>
+	
+	<!-- 게시글 등록 -->
+	<insert id="insertBoard" parameterType="Board">
+		insert into board
+		values(
+			seq_bid.nextval,
+			#{bTitle},
+			#{bWriter},
+			#{bContent},
+			#{originalFile},
+			#{renameFile},
+			default,
+			sysdate,
+			sysdate,
+			default)
+	</insert>
+	
+	<!-- 조회수 증가용 -->
+	<update id="updateCount" parameterType="_int">
+		update board
+		set bCount = bCount + 1
+		where bid = #{bId}
+	</update>
+	
+	<!-- 게시글 상세 조회용 -->
+	<select id="selectOne" parameterType="_int" resultMap="boardResultSet">
+		select *
+		from board
+		where bid = #{bId}
+			  and b_status = 'Y'
+	</select>
+	
+	<!-- 게시글 업데이트 -->
+	<update id="updateBoard" parameterType="Board">
+      update board
+      set bTitle=#{bTitle}, 
+      	  bContent=#{bContent}, 
+      	  original_filename = #{originalFile}, 
+      	  rename_filename = #{renameFile}
+      where bid=#{bId}
+   </update>
+	
+	<!-- 게시글 삭제 -->
+	<update id="deleteBoard" parameterType="Board">
+		update board
+		set b_status = 'N'
+		where bid=#{bId}
+	</update>
+
 </mapper>
