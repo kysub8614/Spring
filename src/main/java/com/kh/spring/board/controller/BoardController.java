@@ -2,24 +2,36 @@ package com.kh.spring.board.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
 import com.kh.spring.board.model.exception.BoardException;
 import com.kh.spring.board.model.service.BoardService;
 import com.kh.spring.board.model.vo.Board;
 import com.kh.spring.board.model.vo.PageInfo;
+import com.kh.spring.board.model.vo.Reply;
 import com.kh.spring.common.Pagination;
+import com.kh.spring.member.model.vo.Member;
 
 @Controller
 public class BoardController {
@@ -189,17 +201,110 @@ public class BoardController {
 		}
 	}
 	
-	/*@RequestMapping("bdelete.do")
-	public Stirng deleteBoard(@RequestParam("bId") Integer bId) {
+	@RequestMapping("bdelete.do")
+	public ModelAndView deleteBoard(@RequestParam("bId") int bId, @RequestParam("page") Integer page, ModelAndView mv) {
+		System.out.println(page);
+		
 		int result = bService.deleteBoard(bId);
 		
 		if(result > 0) {
-			return "redirect:blist.do";
+			mv.addObject(page).setViewName("redirect:blist.do");
 		}else {
-			throw new BoardException("삭제 실패");
+			throw new BoardException("게시글 삭제에 실패하였습니다.");
 		}
-	}*/
+		return mv;
+		
+	}
 	
-
+	
+//	@RequestMapping("topList.do")
+//	public void boardTopList(HttpServletResponse response) throws IOException {
+//		response.setContentType("application/json; charset=utf-8"); 
+//		
+//		
+//		ArrayList<Board> list = bService.selectTopList();
+//		
+//		JSONArray jArr = new JSONArray();
+//		
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//		
+//		for(Board b : list) {
+//			JSONObject jObj = new JSONObject();
+//			jObj.put("bId", b.getbId());
+//			jObj.put("bTitle", b.getbTitle());
+//			jObj.put("bWriter", b.getbWriter());
+//			jObj.put("originalFile", b.getOriginalFile());
+//			jObj.put("bCount", b.getbCount());
+//			jObj.put("bCreateDate", sdf.format(b.getbCreateDate()));
+//			
+//			jArr.add(jObj);
+//		}
+//		
+//		JSONObject sendJson = new JSONObject();
+//		sendJson.put("list", jArr);
+//		
+//		PrintWriter pw = response.getWriter();
+//		pw.print(sendJson);
+//		pw.flush();
+//		pw.close();
+//		
+//	}
+	
+	
+	@RequestMapping("topList.do")
+	@ResponseBody
+	public String boardTopList() throws UnsupportedEncodingException, JsonProcessingException{
+		
+		ArrayList<Board> list = bService.selectTopList();
+		
+		for(Board b : list) {
+			b.setbTitle(URLEncoder.encode(b.getbTitle(), "utf-8"));
+		}
+		
+		ObjectMapper mapper = new ObjectMapper();
+		
+		SimpleDateFormat sdf = new SimpleDateFormat();
+		
+		mapper.setDateFormat(sdf);
+		
+		String jsonStr = mapper.writeValueAsString(list);
+		
+		return jsonStr;
+		
+	}
+	
+	/************* 댓글 가져오기 
+	 * @throws IOException 
+	 * @throws JsonIOException *************/
+	@RequestMapping("rList.do")
+	public void getReplyList(HttpServletResponse response, int bId) throws JsonIOException, IOException {
+		ArrayList<Reply> rList = bService.selectReplyList(bId);
+		
+		for(Reply r: rList) {
+			r.setrContent(URLEncoder.encode(r.getrContent(), "utf-8"));
+		}
+		
+		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
+		gson.toJson(rList, response.getWriter());
+		
+	}
+	
+	/*********** 댓글 등록 ***********/
+	@RequestMapping("addReply.do")
+	@ResponseBody
+	public String addReply(Reply r, HttpSession session) {
+		Member loginUser = (Member)session.getAttribute("loginUser");
+		
+		String rWriter = loginUser.getId();
+		
+		r.setrWriter(rWriter);
+		int result = bService.insertReply(r);
+		
+		if(result > 0) {
+			return "success";
+		}else {
+			throw new BoardException("Error");
+		}
+	}
 	
 }

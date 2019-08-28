@@ -1,8 +1,12 @@
 package com.kh.spring.member.controller;
 
+import java.util.HashMap;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -19,6 +23,7 @@ import com.kh.spring.member.model.exception.MemberException;
 import com.kh.spring.member.model.service.MemberService;
 import com.kh.spring.member.model.service.MemberServiceImpl;
 import com.kh.spring.member.model.vo.Member;
+import com.sun.javafx.collections.MappingChange.Map;
 
 @SessionAttributes("loginUser") // Model에 loginUser라는 키 값으로 객체를 추가하면 자동으로 세션 추가
 @Controller //Controller타입의 어노테이션을 붙여주면 빈 스캐닝을 통해 자동 등록
@@ -28,7 +33,9 @@ public class MemberController {
 	private MemberService mService;
 	
 	@Autowired
-	private BCryptPasswordEncoder bcryptPasswordEncoder; 
+	private BCryptPasswordEncoder bcryptPasswordEncoder;
+	
+	private Logger logger = LoggerFactory.getLogger(MemberController.class);
 	
 	/************ 파라미터 전송 받는 방법 ************/
 	
@@ -220,6 +227,11 @@ public class MemberController {
 	// 회원가입 페이지 이동
 	@RequestMapping("enrollView.do")
 	public String enrollView() {
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("회원등록페이지");
+		}
+		
 		return "member/memberJoin";
 	}
 	
@@ -348,5 +360,35 @@ public class MemberController {
 			throw new MemberException("회원탈퇴 실패");
 		}
 
+	}
+	/*
+	 * 아이디 중복확인
+	 * 
+	 * @RequestMapping("dupid.do")
+	 * 
+	 * public void dupid(HttpServletResponse response, String id) throws IOException
+	 * {
+	 * 
+	 * boolean isUsable = mService.checkIdDup(id)== 0 ? true : false;
+	 * 
+	 * System.out.println(isUsable);
+	 * 
+	 * response.getWriter().print(isUsable); }
+	 */
+	
+	/* 아이디 중복확인 */
+	
+	@RequestMapping("dupid.do")
+	public ModelAndView dupid(ModelAndView mv, String id) {
+		HashMap<String, Boolean> map = new HashMap<String, Boolean>();
+		
+		boolean isUsable = mService.checkIdDup(id)==0 ? true : false;
+		
+		map.put("isUsable", isUsable);
+		mv.addAllObjects(map);
+		mv.setViewName("jsonView");
+		
+		return mv;
+		
 	}
 }

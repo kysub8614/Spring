@@ -73,10 +73,52 @@
    </update>
 	
 	<!-- 게시글 삭제 -->
-	<update id="deleteBoard" parameterType="Board">
+	<update id="deleteBoard" parameterType="_int">
 		update board
 		set b_status = 'N'
-		where bid=#{bId}
+		where bid = #{bId}
 	</update>
+	
+	<select id="selectTopList" resultMap="boardResultSet">
+		<![CDATA[select *
+		from (select * from board where b_status = 'Y' order by bcount desc)
+		where rownum <= 5
+		]]>
+		
+	</select>
+	
+	<!-- 댓글 부분 resultMap 지정 -->
+	<resultMap type="Reply" id="replyResultSet">
+		<id property="rId" column="RID"/>
+		<result property="rContent" column="RCONTENT"/>
+		<result property="refBid" column="REF_BID"/>
+		<result property="rWriter" column="RWRITER"/>
+		<result property="rCreateDate" column="R_CREATE_DATE"/>
+		<result property="rModifyDate" column="R_MODIFY_DATE"/>
+		<result property="rStatus" column="R_STATUS"/>
+	</resultMap>
+	
+	<!-- 댓글 가져오기 -->
+	<select id="selectReplyList" parameterType="_int" resultMap="replyResultSet">
+		select * 
+		from reply r
+			join board b on (r.ref_bid = b.bid)
+		where ref_bid=#{bId}
+		order by rid desc
+	</select>
+	
+	<!-- 댓글 등록 -->
+	<insert id="insertReply" parameterType="Reply">
+		insert into reply
+		values(
+			seq_rid.nextval,
+			#{rContent},
+			#{refBid},
+			#{rWriter},
+			sysdate,
+			sysdate,
+			default
+		)
+	</insert>
 
 </mapper>

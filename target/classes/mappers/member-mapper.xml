@@ -72,4 +72,11 @@
 		set m_status='N'
 		where id=#{id}
 	</update>
+	
+	<!-- ID 중복확인 -->
+	<select id="idCheck" parameterType="string" resultType="_int">
+	 select count(*)
+	 from member
+	 where id=#{id}
+	</select>
 </mapper>
