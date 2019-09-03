@@ -75,7 +75,8 @@
 					  단, additivity가 false인 경우 appender-ref를 꼭 지정해야 함
 	-->
 	<logger name="com.kh.spring">
-		<level value="info" />
+		<!-- <level value="info" /> -->
+		<level value="debug" />
 	</logger>
 	
 	<!-- 3rdparty Loggers -->
@@ -114,6 +115,7 @@
 		<level value="info"/>
 		<appender-ref ref = "myConsole"/>
 	</logger>
+	
 	
 	<logger name="jdbc.sqlonly" additivity="false">
 		<level value="info"/>
